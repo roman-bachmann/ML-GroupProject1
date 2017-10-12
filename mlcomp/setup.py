@@ -8,9 +8,7 @@ setup(name='mlcomp',
       packages=find_packages('src'),
       version='0.0.1',
       install_requires=[
-          'numpy==1.11.0',
-          'scipy==0.19.1',
-          'pandas==0.20.3',
+          'numpy==1.11.0'
       ],
       include_package_data=True,
       zip_safe=False)
