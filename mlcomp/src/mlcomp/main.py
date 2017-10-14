@@ -1,13 +1,13 @@
 import os
-import pandas as pd
 
 from mlcomp import config
+from mlcomp.data import load_csv_data
 
 if __name__ == '__main__':
     print('Hello! This is the ml project \n')
 
     print('Reading Data...')
-    train = pd.read_csv(os.path.join(config.DATA_PATH, 'train.csv'))
-    test = pd.read_csv(os.path.join(config.DATA_PATH, 'test.csv'))
+    y_train, x_train, ids_train = load_csv_data(os.path.join(config.DATA_PATH, 'train.csv'), sub_sample=False)
+    y_test, x_test, ids_test = load_csv_data(os.path.join(config.DATA_PATH, 'test.csv'), sub_sample=False)
 
-    print('Train shape: {train} \nTest shape: {test}'.format(train=train.shape, test=test.shape))
+    print('Train shape: {train} \nTest shape: {test}'.format(train=y_train.shape, test=y_test.shape))
