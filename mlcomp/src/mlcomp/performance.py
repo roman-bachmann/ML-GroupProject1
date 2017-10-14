@@ -24,11 +24,11 @@ def correctness(yb, y_pred, verbose=False):
     return perc
 
 
-def correct_by_cutoff(y_true, y_pred, search_space):
-    labels = list(map(lambda c: predict(y_pred, c), search_space))
-    return list(map(lambda l: correctness(y_true, l), labels))
+# def correct_by_cutoff(y_true, y_pred, search_space):
+#     labels = list(map(lambda c: predict(y_pred, c), search_space))
+#     return list(map(lambda l: correctness(y_true, l), labels))
+#
+# def best_cutoff(y_true, y_pred, search_space):
+#     all_correctness = correct_by_cutoff(y_true, y_pred, search_space)
+#     retrun search_space[all_correctnessindex(max(correctness_by_cutoff))]
 
-
-def best_cutoff(y_true, y_pred, search_space):
-    all_correctness = correct_by_cutoff(y_true, y_pred, search_space)
-    return search_space[all_correctness.index(max(all_correctness))]

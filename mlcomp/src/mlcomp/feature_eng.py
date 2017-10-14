@@ -1,4 +1,14 @@
 import itertools
+import numpy as np
+import copy
+
+
+def replace_nan_by_median(tx, nan_value):
+    """Replaces values with a specified nan_value by the column median."""
+    new_tx = copy.deepcopy(tx)
+    new_tx[new_tx == nan_value] = np.nan
+    col_median = np.nanmedian(new_tx, axis=0)
+    return np.where(np.isnan(new_tx), col_median, new_tx)
 
 
 # TODO: Optimize. Very slow!
