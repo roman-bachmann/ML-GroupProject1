@@ -1,3 +1,5 @@
+import numpy as np
+
 from mlcomp.helpers import compute_rmse, compute_gradient_mse, compute_loss_mae, compute_loss_mse, \
     compute_stochastic_subgradient_mae
 
