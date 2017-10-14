@@ -1,3 +1,5 @@
+import numpy as np
+
 def compute_loss_mse(y, tx, w):
     """Calculate the MSE loss."""
     N = len(y)
