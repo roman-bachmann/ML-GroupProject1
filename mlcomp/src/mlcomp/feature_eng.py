@@ -59,7 +59,7 @@ def build_simple_poly(tx, degree):
     """
     poly = np.ones((tx.shape[0], 1))
 
-    for j in range(1, degree + 1):
-        poly = np.column_stack((poly, np.power(tx, j)))
+    for j in range(1, degree+1):
+        poly = np.column_stack((np.power(tx, j), poly))
 
     return poly
