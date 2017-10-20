@@ -66,3 +66,5 @@ def ridge_regression(y, tx, lambda_):
     w = np.dot(inv, np.dot(tx.T, y))
 
     return w
+
+
