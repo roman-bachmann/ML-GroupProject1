@@ -1,5 +1,7 @@
-from mlcomp.helpers import compute_rmse, compute_gradient_mse, compute_loss_mae, compute_loss_mse, \
-    compute_stochastic_subgradient_mae
+import numpy as np
+
+from mlcomp.costs import compute_loss_rmse, compute_loss_mae, compute_loss_mse
+from mlcomp.helpers import compute_stochastic_subgradient_mae
 
 
 def least_squares_GD(y, tx, initial_w, max_iters, gamma):
@@ -49,7 +51,7 @@ def least_squares(y, tx):
         S_inv_T[:len(s), :len(s)] = np.diag(1 / s)
         w = np.dot(V_T.T, np.dot(S_inv_T, np.dot(U.T, y)))
 
-    rmse = compute_rmse(y, tx, w)
+    rmse = loss_fn(y, tx, w)
 
     return w, rmse
 
@@ -63,6 +65,6 @@ def ridge_regression(y, tx, lambda_):
     inv = np.linalg.inv(np.dot(tx.T, tx) + 2 * N * lambda_ * np.identity(D))
     w = np.dot(inv, np.dot(tx.T, y))
 
-    rmse = compute_rmse(y, tx, w)
+    return w
 
-    return w, rmse
+

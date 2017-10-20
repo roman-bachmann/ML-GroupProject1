@@ -1,31 +1,5 @@
 import numpy as np
 
-def compute_loss_mse(y, tx, w):
-    """Calculate the MSE loss."""
-    N = len(y)
-    e = y - np.dot(tx, w)
-    return np.dot(e, e) / (2 * N)
-
-
-def compute_loss_mae(y, tx, w):
-    """Calculate the MAE loss."""
-    N = len(y)
-    e = y - np.dot(tx, w)
-    return np.sum(np.absolute(e)) / N
-
-
-def compute_rmse(y, tx, w):
-    """Computes the Root Mean Square Error"""
-    mse = compute_loss_mse(y, tx, w)
-    return np.sqrt(2 * mse)
-
-
-def compute_gradient_mse(y, tx, w):
-    """Compute the MSE gradient."""
-    N = len(y)
-    e = y - np.dot(tx, w)
-    return (-1 / N) * np.dot(np.transpose(tx), e)
-
 
 def compute_stochastic_subgradient_mae(y, tx, w):
     """Compute a stochastic subgradient from just few examples n and their corresponding y_n labels."""
@@ -33,6 +7,13 @@ def compute_stochastic_subgradient_mae(y, tx, w):
     e = y - np.dot(tx, w)
     abs_e_subgrad = [np.sign(en) for en in e]  # Sign chosen for subgradient of absolute value function
     return (-1 / N) * np.dot(np.transpose(tx), abs_e_subgrad)
+
+
+def compute_gradient_mse(y, tx, w):
+    """Compute the MSE gradient."""
+    N = len(y)
+    e = y - np.dot(tx, w)
+    return (-1 / N) * np.dot(np.transpose(tx), e)
 
 
 def split_data(x, y, ratio, seed=1):
