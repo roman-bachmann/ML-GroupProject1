@@ -1,3 +1,5 @@
+import numpy as np
+
 from mlcomp.helpers import compute_rmse, compute_gradient_mse, compute_loss_mae, compute_loss_mse, \
     compute_stochastic_subgradient_mae
 
@@ -66,3 +68,15 @@ def ridge_regression(y, tx, lambda_):
     rmse = compute_rmse(y, tx, w)
 
     return w, rmse
+
+
+def simple_ridge_regression(y, tx, lambda_):
+    """Ridge regression using normal equations"""
+
+    N = tx.shape[0]
+    D = tx.shape[1]
+
+    inv = np.linalg.inv(np.dot(tx.T, tx) + 2 * N * lambda_ * np.identity(D))
+    w = np.dot(inv, np.dot(tx.T, y))
+
+    return w
