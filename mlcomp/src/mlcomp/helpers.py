@@ -2,9 +2,12 @@ import numpy as np
 
 def compute_loss_mse(y, tx, w):
     """Calculate the MSE loss."""
+    y = y.reshape((y.shape[0],1))
+    w = w.reshape((w.shape[0],1))
     N = len(y)
     e = y - np.dot(tx, w)
-    return np.dot(e.T, e) / (2 * N)
+    loss =  np.dot(e.T, e) / (2 * N)
+    return loss[0][0]
 
 
 def compute_loss_mae(y, tx, w):
@@ -56,3 +59,63 @@ def predict_labels(weights, data):
     y_pred[np.where(y_pred > 0)] = 1
 
     return y_pred
+
+def sigmoid(t):
+    """apply sigmoid function on t."""
+    return 1 / (1 + np.exp(-t))
+
+def logistic_regression_loss(y, tx, w):
+    """compute the cost by negative log likelihood."""
+    N = tx.shape[0]
+    loss = 0
+    for n in range(N):
+        xnw = np.dot(tx[n], w)
+        loss += np.log(1 + np.exp(xnw)) - y[n]*xnw
+
+    return loss
+
+def logistic_regression_gradient(y, tx, w):
+    """compute the gradient of loss."""
+    return np.dot(tx.T, sigmoid(np.dot(tx, w)) - y)
+
+def sigmoid_diff(x):
+    """The first derrivative of the sigmoid function."""
+    return sigmoid(x) * (1 - sigmoid(x))
+
+def logistic_regression_hessian(y, tx, w):
+    """Returns the hessian of the loss function."""
+    S = sigmoid_diff(np.dot(tx, w))
+    return np.dot(tx.T, S * tx)
+
+def newton_step(y, tx, w, gamma):
+    """
+    Does one step on Newton's method.
+    Returns the loss and updated w.
+    """
+    D = tx.shape[1] if tx.shape[1:] else 1
+
+    loss = logistic_regression_loss(y, tx, w)
+    grad = logistic_regression_gradient(y, tx, w)
+    hess = logistic_regression_hessian(y, tx, w)
+
+    hess_inv = np.linalg.solve(hess, np.identity(D))
+    w = w - gamma * np.dot(hess_inv, grad)
+
+    return loss, w
+
+
+def penalized_logistic_regression_step(y, tx, w, gamma, lambda_):
+    """
+    Do one step of gradient descent, using the penalized logistic regression.
+    Returns the loss and updated w.
+    """
+    D = tx.shape[1] if tx.shape[1:] else 1
+
+    loss = calculate_loss(y, tx, w) + lambda_ * np.linalg.norm(w)
+    grad = calculate_gradient(y, tx, w) + 2 * lambda_ * w
+    hess = calculate_hessian(y, tx, w) + 2 *lambda_ * np.identity(D)
+
+    hess_inv = np.linalg.solve(hess, np.identity(D))
+    w = w - gamma * np.dot(hess_inv, grad)
+
+    return loss, w

@@ -1,41 +1,13 @@
 # Setup and imports
 import numpy as np
-import matplotlib.pyplot as plt
 import os
-from sklearn.preprocessing import PolynomialFeatures
 
-from mlcomp import *
 from mlcomp.config import DATA_PATH
-from mlcomp.feature_eng import build_advanced_poly, build_simple_poly, build_mult_comb
+from mlcomp.models import ridge_regression
+from mlcomp.feature_eng import build_advanced_poly, replace_nan_by_median
 from mlcomp.helpers import split_data, compute_rmse, predict_labels
-from mlcomp.performance import correctness
+from mlcomp.performance import eval_correctness
 from mlcomp.data import load_csv_data, create_csv_submission
-
-def ridge_regression(y, tx, lambda_):
-    """Ridge regression using normal equations"""
-    N = tx.shape[0]
-    D = tx.shape[1]
-
-    inv_inner = np.dot(tx.T, tx) + 2 * N * lambda_ * np.identity(D)
-    inv = np.linalg.solve(inv_inner, np.identity(D))
-    w = np.dot(inv, np.dot(tx.T, y)).reshape((D, 1))
-
-    rmse = compute_rmse(y, tx, w)
-
-    return w, rmse
-
-def replace_nan_by_median(tx, nan_value):
-    """Replaces values with a specified nan_value by the column median."""
-    tx[tx == nan_value] = np.nan
-    col_median = np.nanmedian(tx, axis=0)
-    return np.where(np.isnan(tx), col_median, tx)
-
-
-def calc_correctness(yb, y_pred):
-    """Takes inputs known y and predicted y and prints the ratio of correct predictions vs incorrect ones."""
-    corrects = (y_pred == yb).sum()
-    perc = corrects / len(y_pred) * 100
-    return perc
 
 if __name__ == '__main__':
     TRAIN_PATH = os.path.join(DATA_PATH, 'train.csv')
@@ -47,10 +19,10 @@ if __name__ == '__main__':
     tx = replace_nan_by_median(input_data, -999)
     # important_cols = [0, 2, 7, 1, 11, 13, 5, 9, 19] # 82.592 %
     #important_cols = [0, 2, 7, 1, 11, 13, 5, 9, 19, 10] # 82.7284 %
-    important_cols = [0, 2, 7, 1, 11, 13, 5, 9, 19, 10, 4] # 82.9896 %
-    degree = 5
-    poly = PolynomialFeatures(degree)
-    x_poly = poly.fit_transform(tx[:, important_cols])
+    #important_cols = [0, 2, 7, 1, 11, 13, 5, 9, 19, 10, 4] # 82.9896 %
+    important_cols = [0, 2, 7, 1]
+    degree = 2
+    x_poly = build_advanced_poly(tx, degree, important_cols)
 
     print("Data transformed. Begin training.")
 
@@ -60,8 +32,7 @@ if __name__ == '__main__':
 
     # Predict labels with found weights and print some useful information about quality of fit
     y_pred = predict_labels(weights, x_poly)
-    correctness = calc_correctness(yb, y_pred)
-    print("Correctness:", correctness)
+    eval_correctness(yb, y_pred, verbose=True)
     print("-----------------")
     print("RMSE:", rsme)
 
@@ -73,8 +44,7 @@ if __name__ == '__main__':
     print("Loaded testing data. Transforming data...")
 
     input_data_test = replace_nan_by_median(input_data_test, -999)
-    submit_poly = PolynomialFeatures(degree)
-    x_submit_poly = submit_poly.fit_transform(input_data_test[:, important_cols])
+    x_submit_poly = build_advanced_poly(input_data_test, degree, important_cols)
 
     print("Data transformed. Predicting labels.")
 

@@ -1,7 +1,6 @@
 from itertools import chain, combinations_with_replacement
 import numpy as np
 
-
 def build_advanced_poly(tx, degree, cols=[]):
     """
     Builds full polynomial basis function for input data matrix tx, for j=0 up to j=degree,
@@ -15,7 +14,7 @@ def build_advanced_poly(tx, degree, cols=[]):
     if cols:
         tx = tx[:, cols]
     N = tx.shape[0]
-    D = tx.shape[1]
+    D = tx.shape[1] if tx.shape[1:] else 1
 
     comb = combinations_with_replacement
     combinations = chain.from_iterable(comb(range(D), i) for i in range(0, degree + 1))
@@ -40,3 +39,20 @@ def build_simple_poly(tx, degree):
         poly = np.column_stack((poly, np.power(tx, j)))
 
     return poly
+
+def replace_nan_by_mean(tx, nan_value):
+    """Replaces values with a specified nan_value by the column mean."""
+    tx[tx == nan_value] = np.nan
+    col_mean = np.nanmean(tx, axis=0)
+    return np.where(np.isnan(tx), col_mean, tx)
+
+def replace_nan_by_median(tx, nan_value):
+    """Replaces values with a specified nan_value by the column median."""
+    tx[tx == nan_value] = np.nan
+    col_median = np.nanmedian(tx, axis=0)
+    return np.where(np.isnan(tx), col_median, tx)
+
+def drop_nan_rows(tx, nan_value):
+    """Drop all rows that contain a nan equaling the specified nan_value."""
+    tx[tx == nan_value] = np.nan
+    return tx[~np.isnan(tx).any(axis=1)]
