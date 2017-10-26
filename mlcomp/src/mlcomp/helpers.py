@@ -4,7 +4,7 @@ def compute_loss_mse(y, tx, w):
     """Calculate the MSE loss."""
     N = len(y)
     e = y - np.dot(tx, w)
-    return np.dot(e, e) / (2 * N)
+    return np.dot(e.T, e) / (2 * N)
 
 
 def compute_loss_mae(y, tx, w):
