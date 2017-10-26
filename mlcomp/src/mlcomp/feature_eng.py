@@ -1,28 +1,5 @@
-import itertools
+from itertools import chain, combinations_with_replacement
 import numpy as np
-
-
-# TODO: Optimize. Very slow!
-def build_mult_comb(tx, deg, cols=[]):
-    """
-    Returns all multiplicative combinations of the specified columns for degree deg.
-    For len(col) = D', there are (D' choose deg) combinations of columns that get
-    returned as a matrix.
-    If cols is not given, it returns the combinations of all columns of tx.
-    """
-    N = tx.shape[0]
-    if (cols == []):
-        comb_iter = itertools.combinations_with_replacement(range(tx.shape[1]), deg)
-    else:
-        comb_iter = itertools.combinations_with_replacement(cols, deg)
-    mult = []
-    for comb in comb_iter:
-        mult_col = np.ones(N)
-        for idx in comb:
-            tx_col = tx[:, idx]
-            mult_col = np.multiply(mult_col, tx_col)
-        mult.append(mult_col.tolist())
-    return np.array(mult).T
 
 
 def build_advanced_poly(tx, degree, cols=[]):
@@ -32,15 +9,24 @@ def build_advanced_poly(tx, degree, cols=[]):
     [1, tx, comb_mult(tx, 2), ..., comb_mult(tx, j)]
     comb_mult(tx, 2) denotes all multiplicative combinations of the selected columns of tx.
     If cols is not given, it returns the combinations of all columns of tx.
+
+    Example: Given input tx=[a,b], the output will be [1,a,b,a*a,a*b,b*b]
     """
-    poly = np.ones((tx.shape[0], 1))
+    if cols:
+        tx = tx[:, cols]
+    N = tx.shape[0]
+    D = tx.shape[1]
 
-    for j in range(1, degree + 1):
-        mult = build_mult_comb(tx, j, cols)
-        poly = np.column_stack((poly, mult))
+    comb = combinations_with_replacement
+    combinations = chain.from_iterable(comb(range(D), i) for i in range(0, degree + 1))
+    dimension_count_iter = chain.from_iterable(comb(range(D), i) for i in range(0, degree + 1))
+    x_poly_D = sum(1 for _ in dimension_count_iter)
 
-    return poly
+    x_poly = np.empty((N, x_poly_D), dtype=tx.dtype)
+    for i, c in enumerate(combinations):
+        x_poly[:, i] = tx[:, c].prod(1)
 
+    return x_poly
 
 def build_simple_poly(tx, degree):
     """
