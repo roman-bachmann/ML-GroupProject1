@@ -1,5 +1,5 @@
 from mlcomp.helpers import compute_rmse, compute_gradient_mse, compute_loss_mae, compute_loss_mse, \
-    compute_stochastic_subgradient_mae, newton_step
+    compute_stochastic_subgradient_mae, batch_iter, newton_step
 import numpy as np
 
 
