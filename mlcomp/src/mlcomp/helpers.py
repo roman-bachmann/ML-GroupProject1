@@ -2,9 +2,11 @@ import numpy as np
 
 def compute_loss_mse(y, tx, w):
     """Calculate the MSE loss."""
-    y = y.reshape((y.shape[0],1))
-    w = w.reshape((w.shape[0],1))
-    N = len(y)
+    N = y.shape[0]
+    D = w.shape[0]
+    y = y.reshape((N,1))
+    w = w.reshape((D,1))
+
     e = y - np.dot(tx, w)
     loss =  np.dot(e.T, e) / (2 * N)
     return loss[0][0]
@@ -12,7 +14,11 @@ def compute_loss_mse(y, tx, w):
 
 def compute_loss_mae(y, tx, w):
     """Calculate the MAE loss."""
-    N = len(y)
+    N = y.shape[0]
+    D = w.shape[0]
+    y = y.reshape((N,1))
+    w = w.reshape((D,1))
+
     e = y - np.dot(tx, w)
     return np.sum(np.absolute(e)) / N
 
@@ -25,19 +31,28 @@ def compute_rmse(y, tx, w):
 
 def compute_gradient_mse(y, tx, w):
     """Compute the MSE gradient."""
-    N = len(y)
+    N = y.shape[0]
+    D = w.shape[0]
+    y = y.reshape((N,1))
+    w = w.reshape((D,1))
+
     e = y - np.dot(tx, w)
-    return (-1 / N) * np.dot(np.transpose(tx), e)
+    return (-1 / N) * np.dot(tx.T, e)
 
 
 def compute_stochastic_subgradient_mae(y, tx, w):
     """Compute a stochastic subgradient from just few examples n and their corresponding y_n labels."""
-    N = len(y)
+    N = y.shape[0]
+    D = w.shape[0]
+    y = y.reshape((N,1))
+    w = w.reshape((D,1))
+
     e = y - np.dot(tx, w)
     abs_e_subgrad = [np.sign(en) for en in e]  # Sign chosen for subgradient of absolute value function
     return (-1 / N) * np.dot(np.transpose(tx), abs_e_subgrad)
 
-def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
+
+def batch_iterator(y, tx, batch_size, num_batches=1, shuffle=True):
     """
     Generate a minibatch iterator for a dataset.
     Takes as input two iterables (here the output desired values 'y' and the input data 'tx')
@@ -65,9 +80,9 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
 
 def split_data(x, y, ratio, seed=1):
     """
-    split the dataset based on the split ratio. If ratio is 0.8
+    Split the dataset based on the split ratio. If ratio is 0.8
     you will have 80% of your data set dedicated to training
-    and the rest dedicated to testing
+    and the rest dedicated to testing.
     """
     np.random.seed(seed)  # set seed
     permuted_idxs = np.random.permutation(x.shape[0])
@@ -85,39 +100,77 @@ def predict_labels(weights, data):
 
     return y_pred
 
+
+def predict_labels_cutoff(weights, data, cutoff):
+    """Generates class predictions given weights, a cutoff value,
+    and a test data matrix"""
+    y_pred = np.dot(data, weights)
+    y_pred[np.where(y_pred <= cutoff)] = -1
+    y_pred[np.where(y_pred > cutoff)] = 1
+
+    return y_pred
+
+
 def sigmoid(t):
-    """apply sigmoid function on t."""
+    """Applies sigmoid function on array t."""
+    # Handle overflow of exp() function
+    t[t > 700] = 700
+    t[t < -700] = -700
     return 1 / (1 + np.exp(-t))
 
+
 def logistic_regression_loss(y, tx, w):
-    """compute the cost by negative log likelihood."""
-    N = tx.shape[0]
+    """Computes the cost by negative log likelihood."""
+    N = y.shape[0]
+    D = w.shape[0]
+    y = y.reshape((N,))
+    w = w.reshape((D,))
+
     loss = 0
     for n in range(N):
         xnw = np.dot(tx[n], w)
-        loss += np.log(1 + np.exp(xnw)) - y[n]*xnw
+        # To not run into overflow in exp()
+        if (xnw > 700):
+            loss += xnw - y[n]*xnw
+        else:
+            loss += np.log(1 + np.exp(xnw)) - y[n]*xnw
 
-    return loss
+    return -loss
+
 
 def logistic_regression_gradient(y, tx, w):
-    """compute the gradient of loss."""
+    """Compute the gradient of the negative log likelihood loss."""
+    N = y.shape[0]
+    D = w.shape[0]
+    y = y.reshape((N,1))
+    w = w.reshape((D,1))
     return np.dot(tx.T, sigmoid(np.dot(tx, w)) - y)
+
 
 def sigmoid_diff(x):
     """The first derrivative of the sigmoid function."""
     return sigmoid(x) * (1 - sigmoid(x))
 
+
 def logistic_regression_hessian(y, tx, w):
     """Returns the hessian of the loss function."""
+    N = y.shape[0]
+    D = w.shape[0]
+    y = y.reshape((N,1))
+    w = w.reshape((D,1))
     S = sigmoid_diff(np.dot(tx, w))
     return np.dot(tx.T, S * tx)
+
 
 def newton_step(y, tx, w, gamma):
     """
     Does one step on Newton's method.
     Returns the loss and updated w.
     """
-    D = tx.shape[1] if tx.shape[1:] else 1
+    N = y.shape[0]
+    D = w.shape[0]
+    y = y.reshape((N,1))
+    w = w.reshape((D,1))
 
     loss = logistic_regression_loss(y, tx, w)
     grad = logistic_regression_gradient(y, tx, w)
@@ -134,7 +187,10 @@ def penalized_logistic_regression_step(y, tx, w, gamma, lambda_):
     Do one step of gradient descent, using the penalized logistic regression.
     Returns the loss and updated w.
     """
-    D = tx.shape[1] if tx.shape[1:] else 1
+    N = y.shape[0]
+    D = w.shape[0]
+    y = y.reshape((N,1))
+    w = w.reshape((D,1))
 
     loss = calculate_loss(y, tx, w) + lambda_ * np.linalg.norm(w)
     grad = calculate_gradient(y, tx, w) + 2 * lambda_ * w

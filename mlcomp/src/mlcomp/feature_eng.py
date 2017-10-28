@@ -27,6 +27,7 @@ def build_advanced_poly(tx, degree, cols=[]):
 
     return x_poly
 
+
 def build_simple_poly(tx, degree):
     """
     Builds simple polynomial basis function for input data matrix tx, for j=0 up to j=degree,
@@ -40,11 +41,13 @@ def build_simple_poly(tx, degree):
 
     return poly
 
+
 def replace_nan_by_mean(tx, nan_value):
     """Replaces values with a specified nan_value by the column mean."""
     tx[tx == nan_value] = np.nan
     col_mean = np.nanmean(tx, axis=0)
     return np.where(np.isnan(tx), col_mean, tx)
+
 
 def replace_nan_by_median(tx, nan_value):
     """Replaces values with a specified nan_value by the column median."""
@@ -52,7 +55,28 @@ def replace_nan_by_median(tx, nan_value):
     col_median = np.nanmedian(tx, axis=0)
     return np.where(np.isnan(tx), col_median, tx)
 
+
 def drop_nan_rows(tx, nan_value):
     """Drop all rows that contain a nan equaling the specified nan_value."""
     tx[tx == nan_value] = np.nan
     return tx[~np.isnan(tx).any(axis=1)]
+
+
+def standardize(tx, mean=None, std=None):
+    """Standardizes the matrix and returns mean and standard deviation.
+    All 0's in the std have been replaced by 1's to facilitate division by the std."""
+    if mean is None:
+        mean = np.mean(tx, axis=0)
+    if std is None:
+        std = np.std(tx, axis=0)
+    std[std == 0] = 1
+    tx = tx - mean
+    tx = tx / std
+    return tx, mean, std
+
+
+def de_standardize(x, mean, std):
+    """Reverse the procedure of standardization."""
+    x = x * std
+    x = x + mean
+    return x

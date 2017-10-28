@@ -1,46 +1,52 @@
 from mlcomp.helpers import compute_rmse, compute_gradient_mse, compute_loss_mae, compute_loss_mse, \
-    compute_stochastic_subgradient_mae, batch_iter, newton_step
+    compute_stochastic_subgradient_mae, newton_step, batch_iterator
 import numpy as np
 
 
 def least_squares_GD(y, tx, initial_w, max_iters, gamma):
-    """Gradient descent algorithm using MSE."""
-    w = initial_w
+    """Gradient descent algorithm using MSE.
+    Returns the optimal weights and MSE."""
+    N = y.shape[0]
+    D = initial_w.shape[0]
+    y = y.reshape((N,1))
+    w = initial_w.reshape((D,1))
+
     for n_iter in range(max_iters):
         grad = compute_gradient_mse(y, tx, w)
-        loss = compute_loss_mse(y, tx, w)
         w = w - gamma * grad
 
-    rmse = compute_rmse(y, tx, w)
+    loss = compute_loss_mse(y, tx, w)
 
-    return w, rmse
+    return w, loss
 
 
-def stochastic_subgradient_descent_mae(y, tx, initial_w, max_iters, gamma):
-    """Stochastic subgradient descent algorithm using MAE."""
+def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
+    """Stochastic subgradient descent algorithm using MAE.
+    Returns the optimal weights and MAE."""
+    N = y.shape[0]
+    D = initial_w.shape[0]
+    y = y.reshape((N,1))
+    w = initial_w.reshape((D,1))
     batch_size = 1
-    w = initial_w
+
     for n_iter in range(max_iters):
-        for minibatch_y, minibatch_tx in batch_iter(y, tx, batch_size):
+        for minibatch_y, minibatch_tx in batch_iterator(y, tx, batch_size):
             g = compute_stochastic_subgradient_mae(minibatch_y, minibatch_tx, w)
             w = w - gamma * g
         loss = compute_loss_mae(y, tx, w)
-        print("Stochastic Subgradient Descent({bi}/{ti}): loss={l}, w0={w0}, w1={w1}".format(
-            bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]))
 
     return w, loss
 
 
 def least_squares(y, tx):
     """Calculates the explicit least squares solution.
-    Returns rmse, optimal weights"""
+    Returns the optimal weights and RMSE."""
     N = tx.shape[0]
     D = tx.shape[1] if tx.shape[1:] else 1
     rank_tx = np.linalg.matrix_rank(tx)
 
     # Check if tx is invertible. If so, find explicit solution
-    # using real inverses.
-    # If not, find explicit solution using pseudoinverses.
+    # using real inverses, if not, use pseudoinverses.
     if (rank_tx == max(tx.shape[0], tx.shape[1])):
         gramian_inv = np.linalg.solve(np.dot(tx.T, tx), np.identity(D))
         w = np.dot(gramian_inv, np.dot(tx.T, y))
@@ -56,7 +62,8 @@ def least_squares(y, tx):
 
 
 def ridge_regression(y, tx, lambda_):
-    """Ridge regression using normal equations"""
+    """Ridge regression using normal equations.
+    Returns the optimal weights and RMSE."""
 
     if (lambda_ == 0):
         return least_squares(y, tx)
@@ -66,7 +73,7 @@ def ridge_regression(y, tx, lambda_):
 
     inv_inner = np.dot(tx.T, tx) + 2 * N * lambda_ * np.identity(D)
     inv = np.linalg.solve(inv_inner, np.identity(D))
-    w = np.dot(inv, np.dot(tx.T, y)).reshape((D, 1))
+    w = np.dot(inv, np.dot(tx.T, y))
 
     rmse = compute_rmse(y, tx, w)
 
@@ -76,18 +83,18 @@ def ridge_regression(y, tx, lambda_):
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """Calculates the best weights for a logistic regression using the Newton method.
     Returns the weights and the loss (negative log likelihood)"""
-    # init parameters
+    N = y.shape[0]
+    D = initial_w.shape[0]
+    y = y.reshape((N,1))
+    w = initial_w.reshape((D,1))
+
     threshold = 1e-8
     losses = []
-    w = initial_w
 
-    # start the logistic regression
     for iter in range(max_iters):
-        # get loss and update w.
         loss, w = newton_step(y, tx, w, gamma)
-        # log info
         print("Current iteration={i}, the loss={l}".format(i=iter, l=loss))
-        # converge criterion
+        # Convergence criterion
         losses.append(loss)
         if len(losses) > 1 and np.abs(losses[-1] - losses[-2]) < threshold:
             break
@@ -98,19 +105,20 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """Calculates the best weights for a penalized logistic regression using the Newton method.
     Returns the weights and the loss (negative log likelihood)"""
-    # init parameters
+    N = y.shape[0]
+    D = initial_w.shape[0]
+    y = y.reshape((N,1))
+    w = initial_w.reshape((D,1))
+
     threshold = 1e-8
     losses = []
-    w = initial_w
 
     # start the logistic regression
     for iter in range(max_iters):
-        # get loss and update w.
         loss, w = penalized_logistic_regression_step(y, tx, w, gamma, lambda_)
-        # log info
         if iter % 100 == 0:
             print("Current iteration={i}, loss={l}".format(i=iter, l=loss))
-        # converge criterion
+        # Convergence criterion
         losses.append(loss)
         if len(losses) > 1 and np.abs(losses[-1] - losses[-2]) < threshold:
             break
