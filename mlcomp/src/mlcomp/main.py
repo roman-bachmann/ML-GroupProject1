@@ -5,10 +5,10 @@ import gc
 import timeit
 
 from mlcomp.config import DATA_PATH
-from mlcomp.models import ridge_regression
-from mlcomp.feature_eng import build_advanced_poly, replace_nan_by_median, standardize
+from mlcomp.models import ridge_regression, logistic_regression
+from mlcomp.feature_eng import build_advanced_poly, replace_nan_by_median, standardize, replace_nan_by_mean, build_simple_poly
 from mlcomp.helpers import split_data, compute_rmse, predict_labels
-from mlcomp.performance import eval_correctness
+from mlcomp.performance import eval_correctness, cross_validation
 from mlcomp.data import load_csv_data, create_csv_submission
 
 if __name__ == '__main__':
@@ -22,20 +22,25 @@ if __name__ == '__main__':
     tx = replace_nan_by_median(input_data, -999)
     #important_cols = [0, 2, 7, 1, 11, 13, 5, 9, 19] # 82.592 %
     #important_cols = [0, 2, 7, 1, 11, 13, 5, 9, 19, 10] # 82.7284 %
-    important_cols = [0, 2, 7, 1, 11, 13, 5, 9, 19, 10, 4] # 82.9896 %
+    #important_cols = [0, 2, 7, 1, 11, 13, 5, 9, 19, 10, 4] # 82.9896 %
     #important_cols = [0, 2, 7, 1, 11, 13, 5, 9, 19, 10, 4, 3] # 83.2412 % not worth it
-    degree = 5
-    x_poly = build_advanced_poly(tx, degree, important_cols)
+    #degree = 5
+    #x_poly = build_advanced_poly(tx, degree, important_cols)
 
-    print("Data transformed. Begin training.")
+    print("Data transformed. Begining training...")
 
-    weights, rsme = ridge_regression(yb, x_poly, 0.00001)
+    #best_lambda = cross_validation(yb, x_poly, k_fold=4, seed=1)
+
+    #print("Cross validation done. Best lambda:", best_lambda)
+    initial_w = np.zeros((tx.shape[1], 1))
+    weights, loss = logistic_regression(yb, tx, initial_w, max_iters = 100, gamma = 0.01)
+    #weights, rsme = ridge_regression(yb, x_poly, 0.0001)
     #np.savetxt("weights.csv", weights, delimiter=",")
 
     print("Training done.")
 
     # Predict labels with found weights and print some useful information about quality of fit
-    y_pred = predict_labels(weights, x_poly)
+    y_pred = predict_labels(weights, tx)
     eval_correctness(yb, y_pred, verbose=True)
     print("-----------------")
     print("RMSE:", rsme)
@@ -50,11 +55,11 @@ if __name__ == '__main__':
     print("Loaded testing data. Transforming data...")
 
     input_data_test = replace_nan_by_median(input_data_test, -999)
-    x_submit_poly = build_advanced_poly(input_data_test, degree, important_cols)
+    #x_submit_poly = build_advanced_poly(input_data_test, degree, important_cols)
 
     print("Data transformed. Predicting labels.")
 
-    y_test_pred = predict_labels(weights, x_submit_poly)
+    y_test_pred = predict_labels(weights, input_data_test)
 
     print("Labels predicted. Saving CSV.")
 
