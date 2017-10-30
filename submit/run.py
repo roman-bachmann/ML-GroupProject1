@@ -29,7 +29,7 @@ x_poly = build_advanced_poly(tx, degree, important_cols)
 # Training optimal weights
 print("Data transformed. Begining training...")
 lambda_ = 0.00001
-weights, rsme = ridge_regression(yb, x_poly, lambda_)
+weights, rmse = ridge_regression(yb, x_poly, lambda_)
 print("Training done!\n")
 
 
@@ -37,7 +37,7 @@ print("Training done!\n")
 y_pred = predict_labels(weights, x_poly)
 eval_correctness(yb, y_pred, verbose=True)
 print("-----------------")
-print("Training RMSE:", rsme)
+print("Training RMSE:", rmse)
 
 
 # Loading test data
