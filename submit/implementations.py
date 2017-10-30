@@ -1,5 +1,5 @@
 from helpers import compute_rmse, compute_gradient_mse, compute_loss_mae, compute_loss_mse, \
-    compute_stochastic_subgradient_mae, newton_step, batch_iterator
+    compute_stochastic_subgradient_mae, newton_step, batch_iterator, penalized_logistic_regression_step
 import numpy as np
 
 
