@@ -266,9 +266,9 @@ def penalized_logistic_regression_step(y, tx, w, gamma, lambda_):
     y = y.reshape((N,1))
     w = w.reshape((D,1))
 
-    loss = calculate_loss(y, tx, w) + lambda_ * np.linalg.norm(w)
-    grad = calculate_gradient(y, tx, w) + 2 * lambda_ * w
-    hess = calculate_hessian(y, tx, w) + 2 *lambda_ * np.identity(D)
+    loss = logistic_regression_loss(y, tx, w) + lambda_ * np.linalg.norm(w)
+    grad = logistic_regression_gradient(y, tx, w) + 2 * lambda_ * w
+    hess = logistic_regression_hessian(y, tx, w) + 2 *lambda_ * np.identity(D)
 
     hess_inv = np.linalg.solve(hess, np.identity(D))
     w = w - gamma * np.dot(hess_inv, grad)

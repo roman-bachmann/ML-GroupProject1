@@ -6,6 +6,7 @@ from mlcomp.helpers import compute_rmse
 def eval_correctness(yb, y_pred, verbose=False):
     """Takes inputs known y and predicted y and prints the ratio of correct predictions vs incorrect ones.
 
+    Keyword arguments:
     yb -- true labels
     y_pred -- predicted labels
     verbose -- to print out correctness (default: False)
@@ -19,7 +20,7 @@ def eval_correctness(yb, y_pred, verbose=False):
     return perc
 
 def cross_validation_visualization(lambds, mse_tr, mse_te):
-    """visualization the curves of mse_tr and mse_te."""
+    """Helper function for visualization of the curves of mse_tr and mse_te."""
     plt.semilogx(lambds, mse_tr, marker=".", color='b', label='train error')
     plt.semilogx(lambds, mse_te, marker=".", color='r', label='test error')
     plt.xlabel("lambda")
@@ -30,7 +31,7 @@ def cross_validation_visualization(lambds, mse_tr, mse_te):
     plt.savefig("cross_validation")
 
 def build_k_indices(y, k_fold, seed):
-    """build k indices for k-fold."""
+    """Build k indices for k-fold."""
     num_row = y.shape[0]
     interval = int(num_row / k_fold)
     np.random.seed(seed)
@@ -40,6 +41,7 @@ def build_k_indices(y, k_fold, seed):
     return np.array(k_indices)
 
 def get_train_indices(k_indices, k):
+    """Returns the train indices of a k-fold split."""
     train_indices = np.array([])
     for i in range(k_indices.shape[0]):
         if (i != k-1):
@@ -47,7 +49,7 @@ def get_train_indices(k_indices, k):
     return train_indices.astype(int)
 
 def cross_validation_step(yb, tx, k_indices, k, lambda_):
-    """return the loss of ridge regression."""
+    """Helper function that calculates one step of the cross validation."""
     train_indices = get_train_indices(k_indices, k)
     x_train = tx[train_indices]
     y_train = yb[train_indices]
@@ -62,6 +64,14 @@ def cross_validation_step(yb, tx, k_indices, k, lambda_):
     return loss_tr, loss_te
 
 def cross_validation(yb, tx, k_fold, seed=1):
+    """Returns the best lambda using k-fold cross-validation.
+
+    Keyword arguments:
+    yb -- the training labels
+    tx -- the input data
+    k_fold -- number of folds for cross-validation
+    seed -- seed for randomizer (default: 1)
+    """
     lambdas = np.logspace(-4, 0, 15)
     # split data in k fold
     k_indices = build_k_indices(yb, k_fold, seed)
