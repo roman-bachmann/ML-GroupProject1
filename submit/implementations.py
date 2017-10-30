@@ -22,6 +22,9 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     for n_iter in range(max_iters):
         grad = compute_gradient_mse(y, tx, w)
         w = w - gamma * grad
+        loss = compute_loss_mse(y, tx, w)
+        if n_iter % 10 == 0:
+            print("Current iteration={i}, the loss={l}".format(i=n_iter, l=loss))
 
     loss = compute_loss_mse(y, tx, w)
 
@@ -50,6 +53,8 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
             g = compute_stochastic_subgradient_mae(minibatch_y, minibatch_tx, w)
             w = w - gamma * g
         loss = compute_loss_mae(y, tx, w)
+        if n_iter % 10 == 0:
+            print("Current iteration={i}, the loss={l}".format(i=n_iter, l=loss))
 
     return w, loss
 

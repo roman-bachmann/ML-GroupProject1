@@ -64,7 +64,7 @@ def cross_validation_step(yb, tx, k_indices, k, lambda_):
     return loss_tr, loss_te
 
 def cross_validation(yb, tx, k_fold, seed=1):
-    """Returns the best lambda using k-fold cross-validation.
+    """Returns the best lambda using k-fold cross-validation for ridge regression.
 
     Keyword arguments:
     yb -- the training labels

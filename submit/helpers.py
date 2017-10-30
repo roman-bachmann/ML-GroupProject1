@@ -124,7 +124,7 @@ def split_data(x, y, ratio, seed=1):
     Keyword arguments:
     y -- the labels
     x -- the features
-    ratio -- ratio of training to testing data
+    ratio -- ratio of training to total data
     seed -- seed for random number generator (default: 1)
     """
     np.random.seed(seed)  # set seed
@@ -156,7 +156,7 @@ def predict_labels_cutoff(weights, data, cutoff):
 
 def sigmoid(t):
     """Applies sigmoid function on array t."""
-    # Handle overflow of exp() function
+    # Handle possible overflow of exp() function
     t[t > 700] = 700
     t[t < -700] = -700
     return 1 / (1 + np.exp(-t))
@@ -178,13 +178,13 @@ def logistic_regression_loss(y, tx, w):
     loss = 0
     for n in range(N):
         xnw = np.dot(tx[n], w)
-        # To not run into overflow in exp()
+        # To not encounter overflow in exp()
         if (xnw > 700):
             loss += xnw - y[n]*xnw
         else:
             loss += np.log(1 + np.exp(xnw)) - y[n]*xnw
 
-    return -loss
+    return loss
 
 
 def logistic_regression_gradient(y, tx, w):
