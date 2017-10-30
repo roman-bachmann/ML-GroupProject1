@@ -112,7 +112,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
     Returns the weights and the loss (negative log likelihood).
 
     Keyword arguments:
-    y -- the labels
+    y -- the labels (can only be 0 and 1)
     tx -- the features
     initial_w -- the initial weights
     max_iters -- maximal iterations of logistic regression
@@ -142,7 +142,7 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     Returns the weights and the loss (negative log likelihood)
 
     Keyword arguments:
-    y -- the labels
+    y -- the labels (can only be 0 and 1)
     tx -- the features
     lambda_ -- shrinkage parameter
     initial_w -- the initial weights
